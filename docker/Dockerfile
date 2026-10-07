@@ -30,3 +30,5 @@ RUN install -d -m 0755 /etc/apt/keyrings \
   && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g pnpm@latest
+
+RUN git config --system --add safe.directory /workspace
