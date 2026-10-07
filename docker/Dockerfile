@@ -1,7 +1,8 @@
-FROM node:24-trixie-slim
+FROM python:3.13-slim-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+COPY --from=node:24-trixie-slim /usr/local /usr/local
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN apt-get update \

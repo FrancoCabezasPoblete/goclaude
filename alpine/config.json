@@ -20,7 +20,8 @@
       "ripgrep",
       "nodejs",
       "npm",
-      "uv"
+      "uv",
+      "python3"
     ],
     "initramfsPackages": [],
     "krunfwVersion": "v5.2.1"

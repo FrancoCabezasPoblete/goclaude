@@ -70,4 +70,5 @@ gondolin exec \
     claude --version
     node --version
     pnpm --version
+    uv --version
   '
