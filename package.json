@@ -1,15 +1,21 @@
 {
   "name": "goclaude",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Run Claude Code inside a gondolin micro-VM sandbox",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "goclaude": "./goclaude.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "scripts": {
+    "build": "./build-image.sh",
+    "build:alpine": "./build-image.sh --alpine",
+    "build:docker": "./build-image.sh --docker",
+    "start": "node ./goclaude.mjs"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "dependencies": {
     "@earendil-works/gondolin": "^0.13.0"
   }

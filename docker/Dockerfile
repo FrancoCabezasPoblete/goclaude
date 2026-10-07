@@ -2,6 +2,8 @@ FROM node:24-trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   bash \
