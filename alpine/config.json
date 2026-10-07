@@ -39,8 +39,7 @@
       "echo 'https://downloads.claude.ai/claude-code/apk/stable' >> /etc/apk/repositories",
       "apk update",
       "apk add --no-cache claude-code",
-      "npm install -g pnpm@latest",
-      "git config --system --add safe.directory /workspace"
+      "npm install -g pnpm@latest"
     ]
   }
 }

@@ -113,6 +113,8 @@ try {
     mkdir -p /workspace/node_modules
     mkdir -p /var/lib/goclaude/node_modules
 
+    git config --system --add safe.directory /workspace
+
     mount --bind \
       /var/lib/goclaude/node_modules \
       /workspace/node_modules
