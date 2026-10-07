@@ -33,6 +33,11 @@ function defaultClaudeConfig() {
   const config = {
     hasCompletedOnboarding: true,
     autoUpdates: false,
+    projects: {
+      "/workspace": {
+        hasTrustDialogAccepted: true,
+      },
+    },
   };
 
   try {

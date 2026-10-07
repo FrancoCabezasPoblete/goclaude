@@ -74,7 +74,8 @@ Every run starts clean. The guest gets only:
 
 - your OAuth credentials, copied from `~/.claude/.credentials.json`
 - a minimal `~/.claude.json` (`hasCompletedOnboarding`, `autoUpdates: false`,
-  and the `oauthAccount` from the host config if present)
+  the `oauthAccount` from the host config if present, and a trusted
+  `/workspace` project entry so the trust dialog is skipped)
 - the workspace bind-mounted at `/workspace`
 
 No host `~/.claude` state (settings, history, plugins, commands) is mounted, so
