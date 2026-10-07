@@ -48,7 +48,7 @@ If the first argument is an existing directory it becomes the guest
 `/workspace`; everything else is forwarded to `claude`.
 
 Environment overrides: `IMAGE`, `GOCLAUDE_MEMORY` (default `4G`),
-`GOCLAUDE_DISK` (default `8G`).
+`GOCLAUDE_DISK` (default `4G`).
 
 ## zsh alias
 

@@ -2,11 +2,15 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { VM, RealFSProvider, ensureImageSelector } from "@earendil-works/gondolin";
+import {
+  VM,
+  RealFSProvider,
+  ensureImageSelector,
+} from "@earendil-works/gondolin";
 
 const IMAGE = process.env.IMAGE ?? "claude-code:latest";
 const MEMORY = process.env.GOCLAUDE_MEMORY ?? "4G";
-const DISK = process.env.GOCLAUDE_DISK ?? "8G";
+const DISK = process.env.GOCLAUDE_DISK ?? "4G";
 
 const home = os.homedir();
 const credentialsPath = path.join(home, ".claude", ".credentials.json");
@@ -32,7 +36,9 @@ function defaultClaudeConfig() {
   };
 
   try {
-    const { oauthAccount } = JSON.parse(fs.readFileSync(hostConfigPath, "utf8"));
+    const { oauthAccount } = JSON.parse(
+      fs.readFileSync(hostConfigPath, "utf8"),
+    );
     if (oauthAccount) config.oauthAccount = oauthAccount;
   } catch {
     // No host config: the credentials alone are enough to authenticate.
