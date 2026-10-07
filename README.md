@@ -48,7 +48,25 @@ If the first argument is an existing directory it becomes the guest
 `/workspace`; everything else is forwarded to `claude`.
 
 Environment overrides: `IMAGE`, `GOCLAUDE_MEMORY` (default `4G`),
-`GOCLAUDE_DISK` (default `4G`).
+`GOCLAUDE_DISK` (default `4G`), `GOCLAUDE_SCREENSHOT` (see below).
+
+### Screenshots
+
+Claude Code pastes images by reading the _host_ clipboard, which the guest
+cannot reach, so paste-with-Ctrl+V is not available inside the sandbox. Point
+`GOCLAUDE_SCREENSHOT` at a host folder to expose it read-write at
+`/screenshots`, then reference an image by path in the prompt:
+
+```bash
+GOCLAUDE_SCREENSHOT="$HOME/images/screenshots" npm start
+```
+
+```
+> explain the layout in @/screenshots/image.png
+```
+
+Claude's `Read` tool handles `png`/`jpg`/`webp`, so a path works like a paste.
+If the variable is unset, nothing is mounted.
 
 ## zsh alias
 
@@ -77,6 +95,8 @@ Every run starts clean. The guest gets only:
   the `oauthAccount` from the host config if present, and a trusted
   `/workspace` project entry so the trust dialog is skipped)
 - the workspace bind-mounted at `/workspace`
+- optionally a host folder bind-mounted at `/screenshots`
+  (`GOCLAUDE_SCREENSHOT`)
 
 No host `~/.claude` state (settings, history, plugins, commands) is mounted, so
 the sandbox can't read or modify it. If Claude refreshes its OAuth token during
