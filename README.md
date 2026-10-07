@@ -21,13 +21,13 @@ Run [Claude Code](https://claude.com/product/claude-code) inside a
   ```
 - **Claude Code credentials** at `~/.claude/.credentials.json`, created by
   logging in to `claude` on the host.
-- **Docker** — only when building the image with `--docker`.
+- **Docker** — only when building.
 
 ## Build the sandbox image
 
 ```bash
-./build-image.sh            # alpine (default, no Docker needed)
-./build-image.sh --docker   # build the rootfs with Docker instead
+./build-image.sh            # alpine
+./build-image.sh --docker   # docker
 ```
 
 Both accept `IMAGE=<tag>` to control the final gondolin image tag.
