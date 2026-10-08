@@ -9,8 +9,8 @@ import {
 } from "@earendil-works/gondolin";
 
 const IMAGE = process.env.IMAGE ?? "claude-code:latest";
-const MEMORY = process.env.GOCLAUDE_MEMORY ?? "4G";
-const DISK = process.env.GOCLAUDE_DISK ?? "4G";
+const MEMORY = process.env.GOCLAUDE_MEMORY ?? "2G";
+const DISK = process.env.GOCLAUDE_DISK ?? "2G";
 
 const home = os.homedir();
 const credentialsPath = path.join(home, ".claude", ".credentials.json");
