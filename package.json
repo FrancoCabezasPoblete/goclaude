@@ -11,7 +11,8 @@
     "build": "./build-image.sh",
     "build:alpine": "./build-image.sh --alpine",
     "build:docker": "./build-image.sh --docker",
-    "start": "node ./goclaude.mjs"
+    "start": "node ./goclaude.mjs",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=22.19.0"

@@ -35,20 +35,55 @@ Both accept `IMAGE=<tag>` to control the final gondolin image tag.
 ## Run
 
 ```bash
-npm start -- [workspace] [claude args...]
+npm start -- [options] [workspace] [claude args...]
 ```
 
 or invoke the entry point directly:
 
 ```bash
-node ./goclaude.mjs [workspace] [claude args...]
+node ./goclaude.mjs [options] [workspace] [claude args...]
 ```
 
-If the first argument is an existing directory it becomes the guest
-`/workspace`; everything else is forwarded to `claude`.
+After removing goclaude options, if the first argument is an existing directory
+it becomes the guest `/workspace`; everything else is forwarded to `claude`.
+Use `goclaude --help` for wrapper options, or `goclaude -- --help` for Claude's
+help. Arguments after `--` are passed to Claude unchanged.
 
 Environment overrides: `IMAGE`, `GOCLAUDE_MEMORY` (default `4G`),
 `GOCLAUDE_DISK` (default `4G`).
+
+### Access selected host ports
+
+Host services are not exposed by default. Allow individual **TCP** ports with
+repeatable `--host-port` options (also accepts `--host-port=3000`):
+
+```bash
+goclaude --host-port 3000 --host-port 5432
+goclaude ./my-project --host-port 3000 --continue
+npm start -- --host-port 3000 ./my-project
+```
+
+Inside the guest, connect to `host.internal:3000` or `host.internal:5432`.
+For example, `curl http://host.internal:3000` reaches the service listening on
+**host** `127.0.0.1:3000`, even if it only binds to loopback. Guest `localhost`
+still refers to the guest, not the host. Only the selected ports are mapped;
+normal internet access is unchanged. No host-side listener is created.
+
+For custom names, different ports, or other upstream addresses, use the same
+`--tcp-map GUEST_HOST[:PORT]=UPSTREAM_HOST:PORT` syntax as the Gondolin CLI:
+
+```bash
+goclaude --tcp-map db.internal:5432=127.0.0.1:15432
+goclaude --tcp-map web.internal:8080=[::1]:3000
+```
+
+Both options are repeatable and accept `--option=value`. The last mapping for
+the same guest host/port wins. Omitting the guest port in `--tcp-map` matches
+any guest destination port for that name; prefer explicit ports for narrower
+access. Mappings automatically enable Gondolin's per-host synthetic DNS.
+These are guest-to-host/upstream connections, not host-to-guest port publishing.
+Only expose services you trust the sandbox to use: mapped TCP traffic bypasses
+Gondolin's HTTP filtering and secret substitution.
 
 ### Session history
 

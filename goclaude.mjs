@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { parseArgs, usage } from "./cli.mjs";
 import {
   VM,
   RealFSProvider,
@@ -16,12 +17,18 @@ const home = os.homedir();
 const credentialsPath = path.join(home, ".claude", ".credentials.json");
 const hostConfigPath = path.join(home, ".claude.json");
 
-let args = process.argv.slice(2);
-let workspace = process.cwd();
-
-if (args[0] && fs.existsSync(args[0]) && fs.statSync(args[0]).isDirectory()) {
-  workspace = path.resolve(args.shift());
+let cli;
+try {
+  cli = parseArgs(process.argv.slice(2));
+} catch (error) {
+  console.error(`goclaude: ${error.message}\nRun goclaude --help for usage.`);
+  process.exit(1);
 }
+if (cli.help) {
+  console.log(usage);
+  process.exit(0);
+}
+const { workspace, args, networkOptions } = cli;
 
 if (!fs.existsSync(credentialsPath)) {
   throw new Error(`Claude credentials not found: ${credentialsPath}`);
@@ -84,6 +91,8 @@ try {
 }
 
 const vm = await VM.create({
+  ...networkOptions,
+
   sandbox: {
     imagePath: assetDir,
   },
