@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs, usage } from "./cli.mjs";
+import { createWorkspaceProvider, dependencyEnv } from "./workspace.mjs";
 import {
   VM,
   RealFSProvider,
@@ -98,6 +99,7 @@ const vm = await VM.create({
   },
 
   memory: MEMORY,
+  env: dependencyEnv,
 
   rootfs: {
     size: DISK,
@@ -107,7 +109,7 @@ const vm = await VM.create({
 
   vfs: {
     mounts: {
-      "/workspace": new RealFSProvider(workspace),
+      "/workspace": createWorkspaceProvider(workspace),
       "/root/.claude/projects": new RealFSProvider(historyDir),
       "/screenshots": new RealFSProvider(screenshotsDir),
     },
@@ -136,17 +138,11 @@ try {
     JSON.stringify(defaultClaudeConfig(), null, 2),
   );
 
-  // Give the guest its own node_modules so installs never touch the host copy.
+  // Dependency directories are isolated by the workspace provider at any depth.
   const setup = await vm.exec(`
+    set -e
     chmod 600 /root/.claude/.credentials.json
-    mkdir -p /workspace/node_modules
-    mkdir -p /var/lib/goclaude/node_modules
-
     git config --system --add safe.directory /workspace
-
-    mount --bind \
-      /var/lib/goclaude/node_modules \
-      /workspace/node_modules
   `);
 
   if (!setup.ok) {

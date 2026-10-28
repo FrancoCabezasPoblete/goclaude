@@ -5,20 +5,13 @@ Run [Claude Code](https://claude.com/product/claude-code) inside a
 
 ## Prerequisites
 
-- **Node.js >= 22.19** — required by gondolin.
+- **Node.js >= 24.22.1**.
 - **QEMU** — the default micro-VM backend:
   - Debian/Ubuntu: `sudo apt install qemu-system-x86` (or `qemu-system-arm`)
   - macOS: `brew install qemu`
-- **gondolin** — provides the `gondolin` CLI used by `build-image.sh` and the
-  `@earendil-works/gondolin` module imported by `goclaude.mjs`:
-  ```bash
-  npm install -g @earendil-works/gondolin   # CLI + module, available everywhere
-  ```
-  If you prefer a local install instead:
-  ```bash
-  npm install @earendil-works/gondolin      # module + CLI in ./node_modules/.bin
-  export PATH="$PWD/node_modules/.bin:$PATH" # so build-image.sh finds `gondolin`
-  ```
+- **Local dependencies** — install with `npm install`. `build-image.sh` uses
+  the local Gondolin CLI so the guest helpers match the runtime dependency
+  (`@earendil-works/gondolin` >= 0.14.0); a global CLI is not needed.
 - **Claude Code credentials** at `~/.claude/.credentials.json`, created by
   logging in to `claude` on the host.
 - **Docker** — only when building.
@@ -31,6 +24,8 @@ Run [Claude Code](https://claude.com/product/claude-code) inside a
 ```
 
 Both accept `IMAGE=<tag>` to control the final gondolin image tag.
+Rebuild existing images after upgrading to Gondolin 0.14.0: its VFS executable
+permission fix requires updated guest helpers, not just the JavaScript package.
 
 ## Run
 
@@ -51,6 +46,39 @@ help. Arguments after `--` are passed to Claude unchanged.
 
 Environment overrides: `IMAGE`, `GOCLAUDE_MEMORY` (default `4G`),
 `GOCLAUDE_DISK` (default `4G`).
+
+### Ephemeral dependencies (including monorepos)
+
+The workspace shares source files with the host, but every directory named
+`node_modules`, `.venv` or `.pnpm-store` is shadowed at any depth. Host copies
+are hidden and left untouched; installs create fresh, per-instance dependencies:
+
+```text
+/workspace/node_modules
+/workspace/app/node_modules
+/workspace/apps/frontend/node_modules
+/workspace/services/api/.venv
+/workspace/tools/python/.venv
+/workspace/.pnpm-store
+```
+
+This also applies to directories created after startup. Normal names such as
+`node_modules_backup` are not shadowed. Source edits, manifests and lockfiles
+still update the host. Dependencies disappear when the instance exits; nothing
+is saved under `.goclaude/deps`. Session history and screenshots still persist.
+
+pnpm is configured through the guest environment to use `/workspace/.pnpm-store`.
+Package imports use copying (`pnpm_config_package_import_method=copy` and
+`UV_LINK_MODE=copy`) because the shadow provider does not forward hard links.
+Legacy `npm_config_*` equivalents are also set for older pnpm versions.
+Explicit command-line configuration can override package-manager settings;
+keep dependency and store locations within the shadowed paths above (or on the
+guest filesystem), not another shared source directory.
+
+The shadow layer uses Gondolin `MemoryProvider`: it consumes **host process
+memory**, outside the `GOCLAUDE_MEMORY` guest RAM limit, and is accessed via
+FUSE. It is not a native guest disk. Separate instances have independent
+dependencies but still share source files, so concurrent source edits can conflict.
 
 ### Access selected host ports
 
@@ -116,6 +144,19 @@ These are available both in the guest and on the host, so screenshots taken on
 the host can simply be saved to `./.goclaude/screenshots` and read natively.
 Claude's `Read` tool handles `png`/`jpg`/`webp`, so a path works like a paste.
 
+## Tests
+
+`npm test` runs unit tests without starting a VM. To also exercise npm
+workspaces, npm, uv and pip inside a rebuilt guest (requires QEMU and guest
+internet access to npm/PyPI):
+
+```bash
+GOCLAUDE_VM_TEST_IMAGE=claude-code:latest npm test
+```
+
+The integration test uses a temporary fixture workspace, not your project or
+Claude credentials.
+
 ## zsh alias
 
 Add this to `~/.zshrc` (adjust the path to where you cloned this repo):
@@ -142,7 +183,8 @@ Every run starts clean. The guest gets only:
 - a minimal `~/.claude.json` (`hasCompletedOnboarding`, `autoUpdates: false`,
   the `oauthAccount` from the host config if present, and a trusted
   `/workspace` project entry so the trust dialog is skipped)
-- the workspace bind-mounted at `/workspace`
+- the workspace exposed at `/workspace`, with dependency directories shadowed
+  by a fresh in-memory layer (see [Ephemeral dependencies](#ephemeral-dependencies-including-monorepos))
 - a persisted session-history directory at `<workspace>/.goclaude`, mounted as
   the guest's `~/.claude/projects` (see [Session history](#session-history))
 - a screenshot directory at `<workspace>/.goclaude/screenshots`, mounted at

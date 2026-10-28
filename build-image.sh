@@ -40,6 +40,12 @@ while [ "$#" -gt 0 ]; do
 done
 
 GONDOLIN_IMAGE="${IMAGE:-claude-code:latest}"
+# Use the same installed Gondolin for the runtime and guest helpers (chmod RPC).
+GONDOLIN="$DIR/node_modules/.bin/gondolin"
+if [ ! -x "$GONDOLIN" ]; then
+  echo "error: local Gondolin CLI not found; run npm install first" >&2
+  exit 1
+fi
 
 case "$BACKEND" in
 alpine)
@@ -60,11 +66,11 @@ docker)
   ;;
 esac
 
-gondolin build \
+"$GONDOLIN" build \
   --config "$CONFIG" \
   --tag "$GONDOLIN_IMAGE"
 
-gondolin exec \
+"$GONDOLIN" exec \
   --image "$GONDOLIN_IMAGE" \
   -- sh -lc '
     claude --version
